@@ -516,13 +516,13 @@ class MultiscaleFlow(nn.Module):
                 z_ = z[0]
             else:
                 z_, log_det_ = self.merges[i - 1]([z_, z[i]])
-                log_det += log_det_
+                log_det = log_det + log_det_
             for flow in self.flows[i]:
                 z_, log_det_ = flow(z_)
-                log_det += log_det_
+                log_det = log_det + log_det_
         if self.transform is not None:
             z_, log_det_ = self.transform(z_)
-            log_det += log_det_
+            log_det = log_det + log_det_
         return z_, log_det
 
     def inverse_and_log_det(self, x):
@@ -537,17 +537,17 @@ class MultiscaleFlow(nn.Module):
         log_det = torch.zeros(len(x), dtype=x.dtype, device=x.device)
         if self.transform is not None:
             x, log_det_ = self.transform.inverse(x)
-            log_det += log_det_
+            log_det = log_det + log_det_
         z = [None] * len(self.q0)
         for i in range(len(self.q0) - 1, -1, -1):
             for flow in reversed(self.flows[i]):
                 x, log_det_ = flow.inverse(x)
-                log_det += log_det_
+                log_det = log_det + log_det_
             if i == 0:
                 z[i] = x
             else:
                 [x, z[i]], log_det_ = self.merges[i - 1].inverse(x)
-                log_det += log_det_
+                log_det = log_det + log_det_
         return z, log_det
 
     def sample(self, num_samples=1, y=None, temperature=None):
@@ -572,15 +572,15 @@ class MultiscaleFlow(nn.Module):
                 log_q = log_q_
                 z = z_
             else:
-                log_q += log_q_
+                log_q = log_q + log_q_
                 z, log_det = self.merges[i - 1]([z, z_])
-                log_q -= log_det
+                log_q = log_q - log_det
             for flow in self.flows[i]:
                 z, log_det = flow(z)
-                log_q -= log_det
+                log_q = log_q - log_det
         if self.transform is not None:
             z, log_det = self.transform(z)
-            log_q -= log_det
+            log_q = log_q - log_det
         if temperature is not None:
             self.reset_temperature()
         return z, log_q
@@ -599,20 +599,20 @@ class MultiscaleFlow(nn.Module):
         z = x
         if self.transform is not None:
             z, log_det = self.transform.inverse(z)
-            log_q += log_det
+            log_q = log_q + log_det
         for i in range(len(self.q0) - 1, -1, -1):
             for j in range(len(self.flows[i]) - 1, -1, -1):
                 z, log_det = self.flows[i][j].inverse(z)
-                log_q += log_det
+                log_q = log_q + log_det
             if i > 0:
                 [z, z_], log_det = self.merges[i - 1].inverse(z)
-                log_q += log_det
+                log_q = log_q + log_det
             else:
                 z_ = z
             if self.class_cond:
-                log_q += self.q0[i].log_prob(z_, y)
+                log_q = log_q + self.q0[i].log_prob(z_, y)
             else:
-                log_q += self.q0[i].log_prob(z_)
+                log_q = log_q + self.q0[i].log_prob(z_)
         return log_q
 
     def save(self, path):
