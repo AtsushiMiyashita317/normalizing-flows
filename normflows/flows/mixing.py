@@ -96,8 +96,8 @@ class Invertible1x1Conv(Flow):
                 L_inv = torch.triangular_solve(self.eye, L, upper=False, unitriangular=True)
                 U_inv = torch.triangular_solve(self.eye, U, upper=True, unitriangular=False)
             else:
-                L_inv = torch.triangular_solve(self.eye, L.double(), upper=False, unitriangular=True).type(self.log_S.dtype)
-                U_inv = torch.triangular_solve(self.eye, U.double(), upper=True, unitriangular=False).type(self.log_S.dtype)
+                L_inv = torch.triangular_solve(self.eye.double(), L.double(), upper=False, unitriangular=True).solution.type(self.log_S.dtype)
+                U_inv = torch.triangular_solve(self.eye.double(), U.double(), upper=True, unitriangular=False).solution.type(self.log_S.dtype)
             W = U_inv @ L_inv @ self.P.t()
         else:
             W = self.P @ L @ U
