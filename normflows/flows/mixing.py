@@ -89,7 +89,7 @@ class Invertible1x1Conv(Flow):
         # assemble W from its components (P, L, U, S)
         L = torch.tril(self.L, diagonal=-1) + self.eye
         U = torch.triu(self.U, diagonal=1) + torch.diag(
-            self.sign_S * torch.exp(self.log_S).add(1e-6)
+            self.sign_S * torch.exp(self.log_S).add(1e-3)
         )
         if inverse:
             if self.log_S.dtype == torch.float64:
@@ -106,7 +106,7 @@ class Invertible1x1Conv(Flow):
     def forward(self, z):
         if self.use_lu:
             W = self._assemble_W(inverse=True)
-            log_det = -torch.sum(self.log_S)
+            log_det = -torch.sum(self.log_S.exp().add(1e-3).log())
         else:
             W_dtype = self.W.dtype
             if W_dtype == torch.float64:
@@ -123,7 +123,7 @@ class Invertible1x1Conv(Flow):
     def inverse(self, z):
         if self.use_lu:
             W = self._assemble_W()
-            log_det = torch.sum(self.log_S)
+            log_det = torch.sum(self.log_S.exp().add(1e-3).log())
         else:
             W = self.W
             log_det = torch.slogdet(self.W)[1]
