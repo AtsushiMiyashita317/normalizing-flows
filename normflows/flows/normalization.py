@@ -25,7 +25,7 @@ class ActNorm(AffineConstFlow):
             self.t.data = (
                 -z.mean(dim=self.batch_dims, keepdim=True) * torch.exp(self.s)
             ).data
-            self.data_dep_init_done = torch.tensor(1.0)
+            self.data_dep_init_done.fill_(1.0)
         return super().forward(z)
 
     def inverse(self, z):
@@ -35,7 +35,7 @@ class ActNorm(AffineConstFlow):
             s_init = torch.log(z.std(dim=self.batch_dims, keepdim=True) + 1e-6)
             self.s.data = s_init.data
             self.t.data = z.mean(dim=self.batch_dims, keepdim=True).data
-            self.data_dep_init_done = torch.tensor(1.0)
+            self.data_dep_init_done.fill_(1.0)
         return super().inverse(z)
 
 
