@@ -74,3 +74,33 @@ class Shift(flows.Flow):
         log_det = torch.zeros(z.shape[0], dtype=z.dtype,
                               device=z.device)
         return z, log_det
+    
+class Loft(flows.Flow):
+    """Log-transformation for RealNVP
+
+    """
+    def __init__(self, tau=1.0):
+        super().__init__()
+        self.tau = tau
+
+    def forward(self, z: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        s = z.sign()
+        a = z.abs()
+        a_M = torch.clamp(a - self.tau, min=0.0)
+        a_m = torch.clamp(a, max=self.tau)
+        log1p = torch.log1p(a_M)
+        z = s * (a_m + log1p)
+        sum_dims = list(range(1, z.dim()))
+        logdet = -log1p.sum(dim=sum_dims)
+        return z, logdet
+    
+    def inverse(self, z: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        s = z.sign()
+        a = z.abs()
+        a_M = torch.clamp(a - self.tau, min=0.0)
+        a_m = torch.clamp(a, max=self.tau)
+        z = s * (torch.exp(a_M) - 1 + a_m)
+        log1p = torch.log1p(a_M)
+        sum_dims = list(range(1, z.dim()))
+        logdet = log1p.sum(dim=sum_dims)
+        return z, logdet
