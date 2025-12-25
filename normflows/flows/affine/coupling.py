@@ -128,19 +128,26 @@ class AffineCoupling(Flow):
         if self.scale:
             shift = param[:, 0::2, ...]
             scale_ = param[:, 1::2, ...]
-            if self.scale_map == "exp":
-                z2 = z2 * torch.exp(scale_) + shift
-                log_det = torch.sum(scale_, dim=list(range(1, shift.dim())))
-            elif self.scale_map == "exp_clamp":
-                scale_ = torch.tanh(scale_)
-                z2 = z2 * torch.exp(scale_) + shift
-                log_det = torch.sum(scale_, dim=list(range(1, shift.dim())))
-            elif self.scale_map == "sigmoid":
-                scale = torch.sigmoid(scale_ + 2)
-                z2 = z2 / scale + shift
-                log_det = -torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
-            elif self.scale_map == "sigmoid_inv":
-                scale = torch.sigmoid(scale_ + 2)
+            if type(self.scale_map) == str:
+                if self.scale_map == "exp":
+                    z2 = z2 * torch.exp(scale_) + shift
+                    log_det = torch.sum(scale_, dim=list(range(1, shift.dim())))
+                elif self.scale_map == "exp_clamp":
+                    scale_ = torch.tanh(scale_)
+                    z2 = z2 * torch.exp(scale_) + shift
+                    log_det = torch.sum(scale_, dim=list(range(1, shift.dim())))
+                elif self.scale_map == "sigmoid":
+                    scale = torch.sigmoid(scale_ + 2)
+                    z2 = z2 / scale + shift
+                    log_det = -torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
+                elif self.scale_map == "sigmoid_inv":
+                    scale = torch.sigmoid(scale_ + 2)
+                    z2 = z2 * scale + shift
+                    log_det = torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
+                else:
+                    raise NotImplementedError("This scale map is not implemented.")
+            elif callable(self.scale_map):
+                scale = self.scale_map(scale_)
                 z2 = z2 * scale + shift
                 log_det = torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
             else:
@@ -156,19 +163,26 @@ class AffineCoupling(Flow):
         if self.scale:
             shift = param[:, 0::2, ...]
             scale_ = param[:, 1::2, ...]
-            if self.scale_map == "exp":
-                z2 = (z2 - shift) * torch.exp(-scale_)
-                log_det = -torch.sum(scale_, dim=list(range(1, shift.dim())))
-            elif self.scale_map == "exp_clamp":
-                scale_ = torch.tanh(scale_)
-                z2 = (z2 - shift) * torch.exp(-scale_)
-                log_det = -torch.sum(scale_, dim=list(range(1, shift.dim())))
-            elif self.scale_map == "sigmoid":
-                scale = torch.sigmoid(scale_ + 2)
-                z2 = (z2 - shift) * scale
-                log_det = torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
-            elif self.scale_map == "sigmoid_inv":
-                scale = torch.sigmoid(scale_ + 2)
+            if type(self.scale_map) == str:
+                if self.scale_map == "exp":
+                    z2 = (z2 - shift) * torch.exp(-scale_)
+                    log_det = -torch.sum(scale_, dim=list(range(1, shift.dim())))
+                elif self.scale_map == "exp_clamp":
+                    scale_ = torch.tanh(scale_)
+                    z2 = (z2 - shift) * torch.exp(-scale_)
+                    log_det = -torch.sum(scale_, dim=list(range(1, shift.dim())))
+                elif self.scale_map == "sigmoid":
+                    scale = torch.sigmoid(scale_ + 2)
+                    z2 = (z2 - shift) * scale
+                    log_det = torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
+                elif self.scale_map == "sigmoid_inv":
+                    scale = torch.sigmoid(scale_ + 2)
+                    z2 = (z2 - shift) / scale
+                    log_det = -torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
+                else:
+                    raise NotImplementedError("This scale map is not implemented.")
+            elif callable(self.scale_map):
+                scale = self.scale_map(scale_)
                 z2 = (z2 - shift) / scale
                 log_det = -torch.sum(torch.log(scale), dim=list(range(1, shift.dim())))
             else:
