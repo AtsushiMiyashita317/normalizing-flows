@@ -85,19 +85,20 @@ class Split(Flow):
         return z, log_det
 
 
-class Merge(Split):
+class Merge(Flow):
     """
     Same as Split but with forward and backward pass interchanged
     """
 
     def __init__(self, mode="channel"):
-        super().__init__(mode)
+        super().__init__()
+        self.split_flow = Split(mode=mode)
 
     def forward(self, z):
-        return super().inverse(z)
+        return self.split_flow.inverse(z)
 
     def inverse(self, z):
-        return super().forward(z)
+        return self.split_flow(z)
 
 
 class Squeeze(Flow):
