@@ -10,7 +10,7 @@
 
 
 `normflows` is a PyTorch implementation of discrete normalizing flows. Many popular flow architectures are implemented,
-see the [list below](#implemented-flows). The package can be easily [installed via pip](#installation).
+see the [list below](#implemented-flows). This fork can be installed from GitHub with pip, as described in [Installation](#installation).
 The basic usage is described [here](#usage), and a [full documentation](https://vincentstimper.github.io/normalizing-flows/) 
 is available as well. A more detailed description of this package is given in our
 [accompanying paper](https://joss.theoj.org/papers/10.21105/joss.05361).
@@ -50,10 +50,16 @@ are supported as well.
 
 ## Installation
 
-The latest version of the package can be installed via pip
+Install this fork directly from GitHub.
 
 ```
-pip install normflows
+pip install git+https://github.com/AtsushiMiyashita317/normalizing-flows.git
+```
+
+For reproducible experiment runs, pin the exact commit.
+
+```
+pip install git+https://github.com/AtsushiMiyashita317/normalizing-flows.git@<commit>
 ```
 
 At least Python 3.7 is required. If you want to use a GPU, make sure that
@@ -63,7 +69,7 @@ PyTorch is set up correctly by following the instructions at the
 To run the example notebooks clone the repository first
 
 ```
-git clone https://github.com/VincentStimper/normalizing-flows.git
+git clone https://github.com/AtsushiMiyashita317/normalizing-flows.git
 ```
 
 and then install the dependencies.
@@ -268,7 +274,6 @@ If you use `normflows`, please cite the
   year = {2023}
 } 
 ```
-
 
 
 
